@@ -47,11 +47,12 @@ while i < numeroDeRuas :
     else:
         print(f"Digite um vértice entre 0 e {regioes}")
     
-    distancia = dijkstra(grafo, 1)
 
+distancia = dijkstra(grafo, 1)
 print(grafo)
 
-distanciaTotal = distancia.get(numeroDeRuas, float('infinity'))
+# A variável regioes é usada no get porque regioes irá retornar o último vértice
+distanciaTotal = distancia.get(regioes, float('infinity')) 
 
 if distanciaTotal == float('infinity'):
     print("Não foi possível encontrar um caminho")

@@ -35,11 +35,14 @@ def dijkstra(grafo, inicio):
     return distancias
 
 regioes, numeroDeRuas = map(int, input().split())
+listaDeRuas = []
 i = 0
 
-while i < numeroDeRuas :
+while i < numeroDeRuas:
     # entrar com o vértice 'a' e 'b' e por terceiro, a distância entre eles
     vertice1, vertice2, distancia = map(int, input().split())
+
+    listaDeRuas.append((vertice1, vertice2, distancia))
 
     if (vertice1 <= regioes and vertice2 <= regioes):
         adicionar_aresta(grafo, vertice1, vertice2, distancia)
@@ -47,15 +50,29 @@ while i < numeroDeRuas :
     else:
         print(f"Digite um vértice entre 0 e {regioes}")
     
+# regioes representa o "último" vértice do grafo
+distanciaDoInicio = dijkstra(grafo, 1)
+distanciaDoFim = dijkstra(grafo, regioes)
+distanciaTotal = distanciaDoInicio.get(regioes, float('infinity'))
 
-distancia = dijkstra(grafo, 1)
-print(grafo)
+ruasImportantes = []
 
-# A variável regioes é usada no get porque regioes irá retornar o último vértice
-distanciaTotal = distancia.get(regioes, float('infinity')) 
+# Loop para verificar se o vértice faz parte do caminho
+for i, rua in enumerate(listaDeRuas):
+    u, v, peso = rua
+
+    condicao1 = distanciaDoInicio[u] + peso + distanciaDoFim[v] == distanciaTotal
+    condicao2 = distanciaDoInicio[v] + peso + distanciaDoFim[u] == distanciaTotal
+
+    if condicao1 or condicao2:
+        # Se a condição for verdadeira, a rua faz parte de um caminho mínimo.
+        ruasImportantes.append(i+1)
+
 
 if distanciaTotal == float('infinity'):
     print("Não foi possível encontrar um caminho")
 else:
-    print(distanciaTotal)
+    print("Parte 1:", distanciaTotal)
+
+print("Parte 2:", *ruasImportantes)
 

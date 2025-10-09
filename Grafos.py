@@ -13,6 +13,7 @@ def adicionar_aresta(grafo, no1, no2, distancia):
         grafo[no2] = []
     grafo[no2].append((no1, distancia))
 
+# PARTE 1
 def dijkstra(grafo, inicio):
     distancias = {no: float('infinity') for no in grafo}
     distancias[inicio] = 0
@@ -34,6 +35,7 @@ def dijkstra(grafo, inicio):
     
     return distancias
 
+
 regioes, numeroDeRuas = map(int, input().split())
 listaDeRuas = []
 i = 0
@@ -49,30 +51,73 @@ while i < numeroDeRuas:
         i += 1
     else:
         print(f"Digite um vértice entre 0 e {regioes}")
+
+for no in range(1, regioes + 1):
+    if no not in grafo:
+        grafo[no] = []
     
 # regioes representa o "último" vértice do grafo
 distanciaDoInicio = dijkstra(grafo, 1)
 distanciaDoFim = dijkstra(grafo, regioes)
 distanciaTotal = distanciaDoInicio.get(regioes, float('infinity'))
 
+# PARTE 2
 ruasImportantes = []
+if distanciaTotal != float('infinity'):
+    for i, rua in enumerate(listaDeRuas):
+        u, v, peso = rua
+        if (distanciaDoInicio[u] + peso + distanciaDoFim[v] == distanciaTotal or
+            distanciaDoInicio[v] + peso + distanciaDoFim[u] == distanciaTotal):
+            ruasImportantes.append(i + 1)
 
-# Loop para verificar se o vértice faz parte do caminho
-for i, rua in enumerate(listaDeRuas):
-    u, v, peso = rua
+# PARTE 3
+ruasCriticas = []
+if distanciaTotal != float('infinity'):
+    nosOrdenadosPeloInicio = sorted(grafo.keys(), key=lambda no: distanciaDoInicio.get(no, float('inf')))
 
-    condicao1 = distanciaDoInicio[u] + peso + distanciaDoFim[v] == distanciaTotal
-    condicao2 = distanciaDoInicio[v] + peso + distanciaDoFim[u] == distanciaTotal
+    caminhosDoInicio = [0] * (regioes + 1)
+    if 1 in grafo:
+        caminhosDoInicio[1] = 1
+    for u in nosOrdenadosPeloInicio:
+        for v, peso in grafo.get(u, []):
+            if distanciaDoInicio.get(v) == distanciaDoInicio.get(u, float('inf')) + peso:
+                caminhosDoInicio[v] += caminhosDoInicio[u]
 
-    if condicao1 or condicao2:
-        # Se a condição for verdadeira, a rua faz parte de um caminho mínimo.
-        ruasImportantes.append(i+1)
+    caminhosDoFim = [0] * (regioes + 1)
+    if regioes in grafo:
+        caminhosDoFim[regioes] = 1
+    # CORREÇÃO: Iterar na ordem REVERSA de distância do início
+    for u in reversed(nosOrdenadosPeloInicio): 
+         for v, peso in grafo.get(u, []):
+            # A condição significa que v é predecessor de u no caminho do fim
+            if distanciaDoFim.get(v, float('inf')) == distanciaDoFim.get(u, float('inf')) + peso:
+                caminhosDoFim[v] += caminhosDoFim[u]
 
+    totalDeCaminhos = caminhosDoInicio[regioes]
+    ruasCriticasSet = set()
 
+    if totalDeCaminhos > 0:
+        for i, rua in enumerate(listaDeRuas):
+            u, v, peso = rua
+            
+            if (distanciaDoInicio.get(u, float('inf')) + peso + distanciaDoFim.get(v, float('inf')) == distanciaTotal and
+                caminhosDoInicio[u] * caminhosDoFim[v] == totalDeCaminhos):
+                ruasCriticasSet.add(i + 1)
+
+            if (distanciaDoInicio.get(v, float('inf')) + peso + distanciaDoFim.get(u, float('inf')) == distanciaTotal and
+                caminhosDoInicio[v] * caminhosDoFim[u] == totalDeCaminhos):
+                ruasCriticasSet.add(i + 1)
+
+    ruasCriticas = sorted(list(ruasCriticasSet))
+
+# OUTPUT
 if distanciaTotal == float('infinity'):
     print("Não foi possível encontrar um caminho")
 else:
-    print("Parte 1:", distanciaTotal)
-
-print("Parte 2:", *ruasImportantes)
+    print(f"Parte 1: {distanciaTotal}")
+    print("Parte 2:", *ruasImportantes)
+    if not ruasCriticas:
+        print("Parte 3: -1")
+    else:
+        print("Parte 3:", *ruasCriticas)
 
